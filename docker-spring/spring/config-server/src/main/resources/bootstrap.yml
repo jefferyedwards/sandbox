@@ -1,0 +1,22 @@
+server:
+  port: ${SERVER_PORT:8888}
+spring:
+  application:
+    name: config-server
+  cloud:
+    config:
+      server:
+        git:
+          uri: ${uri}
+          ignore-local-ssh-settings: true
+          private-key: ${privateKey}
+          clone-on-start: true
+    vault:
+      host: ${VAULT_HOST}
+      port: ${VAULT_PORT}
+      authentication: token
+      scheme: http
+      token: ${VAULT_TOKEN}
+management:
+  security:
+    enabled: false

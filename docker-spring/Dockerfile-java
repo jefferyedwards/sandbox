@@ -1,0 +1,20 @@
+FROM openjdk:alpine
+MAINTAINER Jeff Edwards <jeff@edwardsonthe.net>
+
+ARG JAR_FILE
+ARG SERVER_PORT
+
+RUN adduser -D jeff \
+ && echo jeff:password | chpasswd
+
+COPY ${JAR_FILE} /home/jeff/app.jar
+
+EXPOSE ${SERVER_PORT}
+
+VOLUME /tmp
+
+USER jeff
+
+ENTRYPOINT ["java"]
+
+CMD ["-Djava.security.egd=file:/dev/./urandom", "-jar", "/home/jeff/app.jar"]

@@ -1,0 +1,12 @@
+server:
+  port: ${SERVER_PORT:8888}
+spring:
+  application:
+    name: hello
+management:
+  security:
+    enabled: false
+
+world:
+  uri: ${WORLD_URI:http://world-service/world}
+  

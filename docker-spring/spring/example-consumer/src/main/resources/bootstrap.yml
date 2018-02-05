@@ -1,0 +1,7 @@
+spring:
+  cloud:
+    config:
+      fail-fast: true
+      retry:
+        max-attempts: 1000
+      uri: ${CONFIG_SERVER_URI:http://localhost:8888}

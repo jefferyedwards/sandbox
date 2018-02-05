@@ -1,0 +1,45 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+hosts = [ "k8s-master", "k8s-node01", "k8s-node02" ]
+text = File.read('hosts')
+
+Vagrant.configure("2") do |config|
+
+  config.hostmanager.enabled = false if Vagrant.has_plugin?("vagrant-hostmanager")
+  config.vbguest.auto_update = false if Vagrant.has_plugin?("vagrant-vbguest")
+
+  config.vm.box = "k8s/centos"
+  config.vm.box_check_update = false
+  config.vm.box_download_insecure = true
+
+  # ssh settings
+  config.ssh.private_key_path = ["~/.ssh/id_rsa"]
+  config.ssh.insert_key = false
+
+  hosts.each do |host|
+
+    line = text[Regexp.new('^' + host + '.*$')]
+    ipv4 = line[/ansible_host=([^\s]+)/, 1]
+    play = line[/play=([^\s]+)/, 1]
+
+    config.vm.define "#{host}" do |node|
+      node.vm.network "private_network", ip: "#{ipv4}"
+      node.vm.hostname = "#{host}"
+      node.vm.provision "ansible" do |ansible|
+        ansible.inventory_path = "hosts"
+        ansible.playbook = "ansible/#{play}"
+        ansible.compatibility_mode = "2.0"
+      end
+      node.vm.provider :virtualbox do |vb|
+        vb.gui = false
+        vb.customize ["modifyvm", :id, "--name", "#{host}"]
+        vb.customize ["modifyvm", :id, "--cpus", "1"]
+        vb.customize ["modifyvm", :id, "--cpuexecutioncap", "100"]
+        vb.customize ["modifyvm", :id, "--memory", "2048"]
+      end
+    end
+
+  end
+
+end

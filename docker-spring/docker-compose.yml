@@ -1,0 +1,123 @@
+version: "2"
+services:
+
+  git-server:
+    build:
+      context: .
+      dockerfile: Dockerfile-git-server
+    networks:
+      br0:
+        aliases:
+          - git.local
+    ports:
+      - "8022:22"
+
+  vault-server:
+    build:
+      context: .
+      dockerfile: Dockerfile-vault-server
+    networks:
+      br0:
+        aliases:
+          - vault.local
+    ports:
+      - "8200:8200"
+
+  seeder:
+    build:
+      context: .
+      dockerfile: Dockerfile-seeder
+    environment:
+      GIT_URI: ssh://git@git.local/repo.git
+    networks:
+      br0:
+        aliases:
+          - seeder.local
+    ports:
+      - "9022:22"
+    depends_on:
+      - git-server
+      - vault-server
+
+  config-server:
+    build:
+      context: .
+      dockerfile: Dockerfile-java
+      args:
+        JAR_FILE: spring/config-server/target/config-server-0.1.0-SNAPSHOT.jar
+        SERVER_PORT: 8888
+    environment:
+      VAULT_HOST: "vault.local"
+      VAULT_PORT: 8200
+      VAULT_TOKEN: "00000000-0000-0000-0000-000000000000"
+    networks:
+      br0:
+        aliases:
+          - config.local
+    ports:
+      - "8888:8888"
+    depends_on:
+      - seeder
+
+  eureka-server:
+    build:
+      context: .
+      dockerfile: Dockerfile-java
+      args:
+        JAR_FILE: spring/eureka-server/target/eureka-server-0.1.0-SNAPSHOT.jar
+        SERVER_PORT: 8761
+    environment:
+      CONFIG_SERVER_URI: http://config.local:8888/
+    networks:
+      br0:
+        aliases:
+          - eureka.local
+    ports:
+      - "8761:8761"
+    depends_on:
+      - config-server
+
+  example-producer:
+    build:
+      context: .
+      dockerfile: Dockerfile-java
+      args:
+        JAR_FILE: spring/example-producer/target/example-producer-0.1.0-SNAPSHOT.jar
+        SERVER_PORT: 8889
+    environment:
+      CONFIG_SERVER_URI: http://config.local:8888/
+    networks:
+      br0:
+        aliases:
+          - producer.local
+    ports:
+      - "8889:8889"
+    depends_on:
+      - config-server
+      - eureka-server
+
+  example-consumer:
+    build:
+      context: .
+      dockerfile: Dockerfile-java
+      args:
+        JAR_FILE: spring/example-consumer/target/example-consumer-0.1.0-SNAPSHOT.jar
+        SERVER_PORT: 8890
+    environment:
+      CONFIG_SERVER_URI: http://config.local:8888/
+    networks:
+      br0:
+        aliases:
+          - producer.local
+    ports:
+      - "8890:8890"
+    depends_on:
+      - example-producer
+
+networks:
+  br0:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.28.0.0/16
+          gateway: 172.28.0.1

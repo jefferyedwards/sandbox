@@ -1,0 +1,11 @@
+---
+- name:  Base Stage 1 Playbook
+  hosts: all
+  gather_facts: false
+  remote_user: vagrant
+  become: yes
+  become_method: sudo
+  vars:
+    use_proxy: false
+  roles:
+    - stage1

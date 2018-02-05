@@ -1,0 +1,73 @@
+FROM alpine:3.6
+MAINTAINER Jeff Edwards <jeff@edwardsonthe.net>
+
+ENV GIT_URI       "ssh://git@git.local/repo.git"
+ENV PRIVATE_KEY   resources/keys/id_rsa
+ENV PUBLIC_KEY    resources/keys/id_rsa.pub
+ENV REPO_DIR      resources/repo
+ENV VAULT_ADDR    http://vault.local:8200
+ENV VAULT_TOKEN   00000000-0000-0000-0000-000000000000
+ENV VAULT_VERSION 0.8.3
+
+RUN echo "nameserver 8.8.8.8" > /etc/resolv.conf
+
+RUN apk add --no-cache ca-certificates git gnupg openssh openssl libcap \
+ && gpg --keyserver pgp.mit.edu --recv-keys 91A6E7F85D05C65630BEF18951852D87348FFC4C \
+ && ssh-keygen -A
+
+RUN mkdir -p /tmp/build \
+ && cd /tmp/build \
+ && wget https://releases.hashicorp.com/vault/${VAULT_VERSION}/vault_${VAULT_VERSION}_linux_amd64.zip \
+ && wget https://releases.hashicorp.com/vault/${VAULT_VERSION}/vault_${VAULT_VERSION}_SHA256SUMS \
+ && wget https://releases.hashicorp.com/vault/${VAULT_VERSION}/vault_${VAULT_VERSION}_SHA256SUMS.sig \
+ && gpg --batch --verify vault_${VAULT_VERSION}_SHA256SUMS.sig vault_${VAULT_VERSION}_SHA256SUMS \
+ && grep vault_${VAULT_VERSION}_linux_amd64.zip vault_${VAULT_VERSION}_SHA256SUMS | sha256sum -c \
+ && unzip -d /bin vault_${VAULT_VERSION}_linux_amd64.zip
+
+RUN rm -rf /tmp/build \
+ && rm -rf /root/.gnupg
+
+RUN adduser -D jeff \
+ && echo jeff:password | chpasswd
+
+USER jeff
+
+COPY --chown=jeff ${PRIVATE_KEY} ${PUBLIC_KEY} /home/jeff/.ssh/
+
+RUN echo "StrictHostKeyChecking=no" > /home/jeff/.ssh/config \
+ && chmod 0700 /home/jeff/.ssh \
+ && chmod 0600 /home/jeff/.ssh/config \
+ && chmod 0600 /home/jeff/.ssh/id_rsa \
+ && chmod 0644 /home/jeff/.ssh/id_rsa.pub \
+ && cp /home/jeff/.ssh/id_rsa.pub /home/jeff/.ssh/authorized_keys
+
+# RUN vault write secret/config-server privateKey=@/home/jeff/.ssh/id_rsa uri=${GIT_URI}
+
+# RUN git config --global user.email "jeff@edwardsonthe.net" \
+#  && git config --global user.name "Jeff Edwards" \
+#  && cd /home/jeff \
+#  && git clone ${GIT_URI}
+
+# COPY --chown=jeff ${REPO_DIR} /home/jeff/repo
+COPY --chown=jeff ${REPO_DIR} /tmp/repo
+
+# RUN cd /home/jeff/repo \
+#  && git add -A . \
+#  && git commit -m "seeded" \
+#  && git push || [[ $? -eq 1 ]]
+
+RUN echo "export GIT_URI=${GIT_URI}" >> /home/jeff/.profile \
+ && echo "export VAULT_ADDR=${VAULT_ADDR}" >> /home/jeff/.profile \
+ && echo "export VAULT_TOKEN=${VAULT_TOKEN}" >> /home/jeff/.profile \
+ && chmod 755 /home/jeff/.profile
+
+
+EXPOSE 22
+
+USER root
+
+COPY docker-entrypoint-seeder.sh /usr/local/bin/docker-entrypoint.sh
+
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+
+ENTRYPOINT ["docker-entrypoint.sh"]

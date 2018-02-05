@@ -1,0 +1,48 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+Vagrant.configure("2") do |config|
+
+  config.hostmanager.enabled = false if Vagrant.has_plugin?("vagrant-hostmanager")
+  config.vbguest.auto_update = false if Vagrant.has_plugin?("vagrant-vbguest")
+
+  config.vm.box = "centos/7"
+  config.vm.box_check_update = false
+  config.vm.box_download_insecure = true
+  config.vm.network "private_network", ip: "192.168.133.10", virtualbox__intnet: true
+  config.vm.synced_folder '.', '/vagrant', disabled: true
+
+  # ssh settings
+  config.ssh.private_key_path = ["~/.ssh/id_rsa", "~/.vagrant.d/insecure_private_key"]
+  config.ssh.insert_key = false
+
+  config.vm.provision "ansible" do |ansible|
+  	ansible.playbook = "ansible/stage1.yml"
+  	ansible.compatibility_mode = "2.0"
+  end
+
+  config.vm.provision :reload
+
+  config.vm.provision "ansible" do |ansible|
+    ansible.playbook = "ansible/stage2.yml"
+  	ansible.compatibility_mode = "2.0"
+  end
+
+  config.vm.provision :reload
+
+  config.vm.provision "ansible" do |ansible|
+    ansible.playbook = "ansible/stage3.yml"
+ 	  ansible.compatibility_mode = "2.0"
+  end
+
+  config.vm.provision :reload
+
+  config.vm.provider :virtualbox do |vb|
+    vb.gui = false
+    vb.customize ["modifyvm", :id, "--name", "base"]
+    vb.customize ["modifyvm", :id, "--cpus", "2"]
+    vb.customize ["modifyvm", :id, "--cpuexecutioncap", "100"]
+    vb.customize ["modifyvm", :id, "--memory", "1024"]
+  end
+
+end

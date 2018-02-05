@@ -1,0 +1,62 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: world-deployment
+  labels:
+    app: world
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: world
+  template:
+    metadata:
+      labels:
+        app: world
+    spec:
+      dnsPolicy: ClusterFirst
+      hostAliases:
+      - ip: "192.168.133.100"
+        hostnames:
+        - "k8s-master.local"
+        - "k8s-master"
+      - ip: "192.168.133.101"
+        hostnames:
+        - "k8s-node01.local"
+        - "k8s-node01"
+      - ip: "192.168.133.102"
+        hostnames:
+        - "k8s-node02.local"
+        - "k8s-node02"
+      restartPolicy: Always
+      containers:
+      - name: world
+        image: jefferysedwards/world:latest
+        env:
+        - name: http_proxy
+          value: $(NODE_NAME):4140
+        - name: NODE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
+        - name: POD_IP
+          valueFrom:
+            fieldRef:
+              fieldPath: status.podIP
+        ports:
+        - name: service
+          containerPort: 8888
+
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: world-service
+spec:
+  type: ClusterIP
+  selector:
+    app: world
+  ports:
+  - name: http
+    port: 8888

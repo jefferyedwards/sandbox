@@ -1,0 +1,83 @@
+---
+- name: set selinux to disabled
+  lineinfile:
+    path: /etc/selinux/config
+    regexp: '^SELINUX='
+    line: 'SELINUX=disabled'
+
+- name: disable services
+  service: name={{ item }} enabled=no state=stopped
+  with_items:
+    - firewalld
+
+- name: install epel-release package
+  yum: name=epel-release state=present
+
+- name: update packages
+  yum: name='*' state=latest update_cache=yes
+
+- name: add br_netfilter
+  command: modprobe br_netfilter
+
+- name: update /etc/sysctl.d/default.conf
+  blockinfile:
+    create: yes
+    dest: /etc/sysctl.d/default.conf
+    owner: root
+    group: root
+    mode: 0644
+    block: |
+      # required by k8s
+      net.bridge.bridge-nf-call-ip6tables = 1
+      net.bridge.bridge-nf-call-iptables = 1
+      # disable ipv6
+      net.ipv6.conf.all.disable_ipv6 = 1
+      net.ipv6.conf.default.disable_ipv6 = 1
+      net.ipv6.conf.lo.disable_ipv6 = 1
+      net.ipv6.conf.eth0.disable_ipv6 = 1
+      net.ipv6.conf.eth1.disable_ipv6 = 1
+
+- name: sysctl --system
+  command: sysctl --system
+
+- name: disable swap
+  command: swapoff -a
+
+- name: cleanup swap in /etc/fstab
+  lineinfile: dest=/etc/fstab regexp='^.*swap.*$' state=absent
+
+- name: uninstall VBox Guest Additions
+  shell: /opt/VBoxGuestAdditions*/uninstall.sh
+  args:
+    removes: /usr/share/VBoxGuestAdditions
+
+- name: remove wpa_supplicant package
+  yum: name=wpa_supplicant state=absent
+
+- name: install kubernetes repo
+  register: kubernetes
+  yum_repository:
+    name: kubernetes
+    file: kubernetes
+    description: Kubernetes Repository
+    baseurl: https://packages.cloud.google.com/yum/repos/kubernetes-el7-x86_64
+    enabled: no
+    gpgcheck: yes
+    gpgkey:
+      - https://packages.cloud.google.com/yum/doc/yum-key.gpg
+      - https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
+
+- name: create ~vagrant/.ssh directory
+  file: path=~vagrant/.ssh state=directory mode=0700
+
+- name: install ssh private keys
+  copy: src=~/.ssh/id_rsa dest=~vagrant/.ssh/id_rsa owner=vagrant group=vagrant mode=0600
+
+- name: install ssh public keys
+  copy: src=~/.ssh/id_rsa.pub dest=~vagrant/.ssh/id_rsa.pub owner=vagrant group=vagrant mode=0644
+
+- name: setup authorized keys
+  authorized_key:
+    user: vagrant
+    state: present
+    key: "{{ lookup('file', '~/.ssh/id_rsa.pub') }}"

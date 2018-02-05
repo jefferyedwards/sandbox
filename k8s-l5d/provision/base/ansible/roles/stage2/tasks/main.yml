@@ -1,0 +1,52 @@
+---
+- name: install packages
+  yum: name={{ item }} state=present
+  with_items:
+    - dkms
+    - golang
+    - java-1.8.0-openjdk-devel
+    - kernel-devel
+    - kernel-headers
+    - mvn
+    - net-tools
+    - ntp
+    - python-netaddr
+    - yum-utils
+
+- name: install 'Development tools' packages
+  yum: name="@Development tools" state=present
+
+- name: install go packages
+  command: go get {{ item }}
+  with_items:
+    - github.com/cloudflare/cfssl/cmd/cfssl
+    - github.com/kubernetes-incubator/cri-tools/cmd/crictl
+
+- copy:
+    src: /root/go/bin/{{ item }}
+    dest: /usr/local/bin/{{ item }}
+    remote_src: yes
+    owner: root
+    group: root
+    mode: 0755
+  with_items:
+    - cfssl
+    - crictl
+
+- file:
+    path: /root/go
+    state: absent
+
+- name: install kubernetes packages
+  yum: name={{ item }} enablerepo=kubernetes state=present
+  with_items:
+    - docker
+    - ebtables
+    - ethtool
+    - kubelet
+    - kubeadm
+    - kubectl
+  notify: kubernetes packages installed
+
+- name: remove old kernels
+  command: package-cleanup -y --oldkernels --count=1

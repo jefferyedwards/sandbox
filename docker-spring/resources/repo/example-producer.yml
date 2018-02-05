@@ -1,0 +1,4 @@
+producer:
+  server:
+    port: 8889
+  message: Hello World!

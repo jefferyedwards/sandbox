@@ -1,0 +1,33 @@
+FROM alpine:3.6
+MAINTAINER Jeff Edwards <jeff@edwardsonthe.net>
+
+ENV PUBLIC_KEY  resources/keys/id_rsa.pub
+
+RUN apk add --no-cache git openssh
+
+RUN ssh-keygen -A
+
+RUN adduser -D jeff \
+ && echo jeff:password | chpasswd
+
+RUN adduser -D -s /usr/bin/git-shell git \
+ && echo git:password | chpasswd
+
+COPY ${PUBLIC_KEY} /home/git/.ssh/authorized_keys
+
+RUN chown -R git:git /home/git/.ssh \
+ && chmod 0700 /home/git/.ssh \
+ && chmod 0600 /home/git/.ssh/authorized_keys
+
+RUN git init --bare /repo.git \
+ && chown -R git:git /repo.git
+
+COPY docker-entrypoint-git-server.sh /usr/local/bin/docker-entrypoint.sh
+
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+
+EXPOSE 22
+
+VOLUME /repo.git
+
+ENTRYPOINT ["docker-entrypoint.sh"]

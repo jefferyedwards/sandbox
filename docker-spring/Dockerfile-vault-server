@@ -1,0 +1,32 @@
+FROM alpine:3.6
+MAINTAINER Jeff Edwards <jeff@edwardsonthe.net>
+
+ENV VAULT_PORT    8200
+ENV VAULT_TOKEN   00000000-0000-0000-0000-000000000000
+ENV VAULT_VERSION 0.8.3
+
+RUN echo "nameserver 8.8.8.8" > /etc/resolv.conf
+
+RUN apk add --no-cache ca-certificates gnupg openssl libcap \
+ && gpg --keyserver pgp.mit.edu --recv-keys 91A6E7F85D05C65630BEF18951852D87348FFC4C
+
+RUN mkdir -p /tmp/build \
+ && cd /tmp/build \
+ && wget https://releases.hashicorp.com/vault/${VAULT_VERSION}/vault_${VAULT_VERSION}_linux_amd64.zip \
+ && wget https://releases.hashicorp.com/vault/${VAULT_VERSION}/vault_${VAULT_VERSION}_SHA256SUMS \
+ && wget https://releases.hashicorp.com/vault/${VAULT_VERSION}/vault_${VAULT_VERSION}_SHA256SUMS.sig \
+ && gpg --batch --verify vault_${VAULT_VERSION}_SHA256SUMS.sig vault_${VAULT_VERSION}_SHA256SUMS \
+ && grep vault_${VAULT_VERSION}_linux_amd64.zip vault_${VAULT_VERSION}_SHA256SUMS | sha256sum -c \
+ && unzip -d /bin vault_${VAULT_VERSION}_linux_amd64.zip
+
+RUN rm -rf /tmp/build \
+ && apk del gnupg openssl \
+ && rm -rf /root/.gnupg
+
+COPY docker-entrypoint-vault-server.sh /usr/local/bin/docker-entrypoint.sh
+
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+
+EXPOSE ${VAULT_PORT}
+
+ENTRYPOINT ["docker-entrypoint.sh"]

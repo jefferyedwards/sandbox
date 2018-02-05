@@ -1,0 +1,16 @@
+server:
+  port: ${producer.server.port:0}
+spring:
+  application:
+    name: example-producer
+eureka:
+  client:
+    fetch-registry: true
+    register-with-eureka: true
+    service-url:
+       defaultZone: ${eureka.server.uri}
+  instance:
+    prefer-ip-address: true
+management:
+  security:
+    enabled: false
