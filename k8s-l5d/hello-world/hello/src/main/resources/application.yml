@@ -8,5 +8,5 @@ management:
     enabled: false
 
 world:
-  uri: ${WORLD_URI:http://world-service/world}
+  uri: ${WORLD_URI:http://world-service}
   

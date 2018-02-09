@@ -30,18 +30,17 @@ class Controller {
   final Logger LOGGER = LoggerFactory.getLogger(Controller.class);
 
   @Value("${world.uri}")
-  private String worldUri;
-  
+  String worldUri;
+
   @Autowired
   RestTemplateBuilder builder;
 
-  private RestTemplate restTemplate;
+  RestTemplate restTemplate;
 
   @RequestMapping(value = "/hello", method = RequestMethod.GET, produces = "text/plain")
   public String hello(@RequestParam(name = "source", defaultValue = "World") String source) {
-    LOGGER.info("~~~ source = {}", source);
-    LOGGER.info("~~~    uri = {}", worldUri + "?source=" + source);
-    String name = restTemplate.getForObject(worldUri + "?source=" + source, String.class);
+    LOGGER.info("~~~    uri = {}", worldUri + "/world?source=" + source);
+    String name = restTemplate.getForObject(worldUri + "/world?source=" + source, String.class);
     LOGGER.info("Hello {}", name);
     return "Hello" + name;
   }
