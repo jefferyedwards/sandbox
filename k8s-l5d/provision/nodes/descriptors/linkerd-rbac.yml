@@ -8,7 +8,10 @@ metadata:
 rules:
   - apiGroups: [""] # "" indicates the core API group
     resources: ["endpoints", "services", "pods"]
-    verbs: ["get", "watch", "list"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: [ "extensions" ]
+    resources: [ "ingresses" ]
+    verbs: [ "list", "watch" ]
 
 ---
 kind: ClusterRoleBinding
@@ -19,6 +22,9 @@ subjects:
   - kind: ServiceAccount
     name: default
     namespace: default
+  - kind: ServiceAccount
+    name: default
+    namespace: linkerd
 roleRef:
   kind: ClusterRole
   name: linkerd-endpoints-reader

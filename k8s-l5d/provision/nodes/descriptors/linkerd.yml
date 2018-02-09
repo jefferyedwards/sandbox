@@ -1,60 +1,73 @@
+################################################################################
+# Linkerd Service Mesh
+#
+# You can deploy this to your Kubernetes cluster by running:
+#   kubectl create ns linkerd
+#   kubectl apply -n linkerd -f linkerd.yml
+#
+################################################################################
 ---
 apiVersion: v1
 kind: ConfigMap
 metadata:
   name: l5d-config
-  namespace: default
-
+  labels:
+    app: l5d
+  namespace: linkerd
 data:
   config.yaml: |-
     admin:
       ip: 0.0.0.0
       port: 9990
-
     namers:
     # The "basic" k8s namer.  We reference this in the incoming router's dtab
     - kind: io.l5d.k8s
-
     # This namer has the daemonset transformer "built-in"
     - kind: io.l5d.k8s
-      prefix: /io.l5d.k8s.ds
+      prefix: /io.l5d.k8s.http
       transformers:
       - kind: io.l5d.k8s.daemonset
-        namespace: default
-        port: incoming
+        namespace: linkerd
+        port: http-incoming
         service: l5d
-
+    # A namer that rewrites a l5d path to a k8s path
+    - kind: io.l5d.rewrite
+      prefix: /portNsSvcToK8s
+      pattern: "/{port}/{ns}/{svc}"
+      name: "/k8s/{ns}/{port}/{svc}"
     telemetry:
     - kind: io.l5d.prometheus
     - kind: io.l5d.recentRequests
       sampleRate: 0.25
-
     usage:
       enabled: false
       orgId: service-mesh
-
     routers:
-    - label: outgoing
+    - label: http-outgoing
       protocol: http
       dtab: |
-        /ph        => /$/io.buoyant.rinet ;             # Lookup the name in DNS
-        /srv       => /ph/80 ;                          # Use port 80 if unspecified
-        /srv       => /$/io.buoyant.porthostPfx/ph ;    # Attempt to extract the port from the hostname
-        /srv       => /#/io.l5d.k8s.ds/default/http ;   # Lookup the name in Kubernetes, use the linkerd daemonset pod
-        /svc       => /srv ;
-      servers:
+        /ph  => /$/io.buoyant.rinet ;                     # /ph/80/google.com -> /$/io.buoyant.rinet/80/google.com
+        /svc => /ph/80 ;                                  # /svc/google.com -> /ph/80/google.com
+        /svc => /$/io.buoyant.porthostPfx/ph ;            # /svc/google.com:80 -> /ph/80/google.com
+        /k8s => /#/io.l5d.k8s.http ;                      # /k8s/default/http/foo -> /#/io.l5d.k8s.http/default/http/foo
+        /portNsSvc => /#/portNsSvcToK8s ;                 # /portNsSvc/http/default/foo -> /k8s/default/http/foo
+        /host => /portNsSvc/http/default ;                # /host/foo -> /portNsSvc/http/default/foo
+        /host => /portNsSvc/http ;                        # /host/default/foo -> /portNsSvc/http/default/foo
+        /svc => /$/io.buoyant.http.domainToPathPfx/host ; # /svc/foo.default -> /host/default/foo
+    servers:
       - port: 4140
         ip: 0.0.0.0
       service:
         responseClassifier:
           kind: io.l5d.http.retryableRead5XX
-
-    - label: incoming
+    - label: http-incoming
       protocol: http
       dtab: |
-        /srv        => /#/io.l5d.k8s/default/http;
-        /host       => /srv;
-        /svc        => /host;
+        /k8s => /#/io.l5d.k8s ;                           # /k8s/default/http/foo -> /#/io.l5d.k8s/default/http/foo
+        /portNsSvc => /#/portNsSvcToK8s ;                 # /portNsSvc/http/default/foo -> /k8s/default/http/foo
+        /host => /portNsSvc/http/default ;                # /host/foo -> /portNsSvc/http/default/foo
+        /host => /portNsSvc/http ;                        # /host/default/foo -> /portNsSvc/http/default/foo
+        /svc => /$/io.buoyant.http.domainToPathPfx/host ; # /svc/foo.default -> /host/default/foo
       interpreter:
         kind: default
         transformers:
@@ -62,15 +75,25 @@ data:
       servers:
       - port: 4141
         ip: 0.0.0.0
+    # HTTP Ingress Controller listening on port 80
+    - label: http-ingress
+      protocol: http
+      servers:
+        - port: 80
+          ip: 0.0.0.0
+          clearContext: true
+      identifier:
+        kind: io.l5d.ingress
+      dtab: /svc => /#/io.l5d.k8s
 
 ---
 apiVersion: extensions/v1beta1
 kind: DaemonSet
 metadata:
+  name: l5d
   labels:
     app: l5d
-  name: l5d
-  namespace: default
+  namespace: linkerd
 spec:
   template:
     metadata:
@@ -95,18 +118,19 @@ spec:
               fieldPath: spec.nodeName
         args: [ "/io.buoyant/linkerd/config/config.yaml" ]
         ports:
-        - name: outgoing
-          containerPort: 4140
-          hostPort: 4140
-        - name: incoming
-          containerPort: 4141
         - name: admin
           containerPort: 9990
+        - name: http-outgoing
+          containerPort: 4140
+          hostPort: 4140
+        - name: http-incoming
+          containerPort: 4141
+        - name: http-ingress
+          containerPort: 80
         volumeMounts:
         - name: "l5d-config"
           mountPath: "/io.buoyant/linkerd/config"
           readOnly: true
-
       - name: kubectl
         image: buoyantio/kubectl:v1.8.5
         args: [ "proxy",  "-p",  "8001" ]
@@ -115,16 +139,20 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: l5d
-  namespace: default
+  name: l5d-service
+  labels:
+    app: l5d
+  namespace: linkerd
 spec:
   selector:
     app: l5d
-  type: NodePort
   ports:
-  - name: outgoing
-    port: 4140
-  - name: incoming
-    port: 4141
   - name: admin
     port: 9990
+  - name: http-outgoing
+    port: 4140
+  - name: http-incoming
+    port: 4141
+  - name: http-ingress
+    port: 80
+  type: ClusterIP

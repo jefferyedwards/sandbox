@@ -7,7 +7,7 @@
     - java-1.8.0-openjdk-devel
     - kernel-devel
     - kernel-headers
-    - mvn
+    - maven
     - net-tools
     - ntp
     - python-netaddr
