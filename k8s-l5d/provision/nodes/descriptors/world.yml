@@ -2,11 +2,11 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: world-deployment
+  name: world
   labels:
     app: world
 spec:
-  replicas: 3
+  replicas: 2
   selector:
     matchLabels:
       app: world
@@ -17,27 +17,23 @@ spec:
     spec:
       dnsPolicy: ClusterFirst
       hostAliases:
-      - ip: "192.168.133.100"
+      - ip: "192.168.33.200"
         hostnames: [ "k8s-master.local", "k8s-master" ]
-      - ip: "192.168.133.101"
-        hostnames: [ ]"k8s-node01.local", "k8s-node01" ]
-      - ip: "192.168.133.102"
+      - ip: "192.168.33.201"
+        hostnames: [ "k8s-node01.local", "k8s-node01" ]
+      - ip: "192.168.33.202"
         hostnames: [ "k8s-node02.local", "k8s-node02" ]
       restartPolicy: Always
       containers:
       - name: world
         image: jefferysedwards/world:latest
         env:
-        - name: http_proxy
-          value: $(NODE_NAME):4140
         - name: NODE_NAME
           valueFrom:
             fieldRef:
               fieldPath: spec.nodeName
-        - name: POD_IP
-          valueFrom:
-            fieldRef:
-              fieldPath: status.podIP
+        - name: JAVA_OPTS
+          value: -Dhttp.proxyHost=$(NODE_NAME) -Dhttp.proxyPort=4140
         ports:
         - name: service
           containerPort: 8888

@@ -1,0 +1,26 @@
+---
+- name: add vagrant user to docker group
+  user:
+    name: vagrant
+    groups: docker
+    append: yes
+  listen: "packages installed"
+
+- name: enable services
+  service: name={{ item }} enabled=yes state=stopped
+  with_items:
+  - docker
+  - kubelet
+  - ntpd
+  listen: "packages installed"
+
+- name: update cgroup driver used by kubernetes
+  replace:
+    path: /etc/systemd/system/kubelet.service.d/10-kubeadm.conf
+    regexp: '^(.*)cgroup-driver=systemd(.*)$'
+    replace: '\1cgroup-driver=cgroupfs\2'
+  listen: "packages installed"
+
+- name: reload the systemd manager configuration
+  command: systemctl daemon-reload
+  listen: "packages installed"

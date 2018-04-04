@@ -1,11 +1,11 @@
 ---
-- name:  Common Playbook
+- name:  Base Playbook
   hosts: all
   gather_facts: false
   remote_user: vagrant
   become: yes
   become_method: sudo
   vars:
-    use_proxy: true
+    install_ssh_keys: true
   roles:
-    - common
+    - base

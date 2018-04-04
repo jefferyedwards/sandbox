@@ -155,4 +155,4 @@ spec:
     port: 4141
   - name: http-ingress
     port: 80
-  type: LoadBalancer
+  type: ClusterIP

@@ -1,8 +1,0 @@
----
-- name: kubernetes packages installed
-  service: name={{ item }} enabled=yes state=stopped
-  with_items:
-    - docker
-    - kubelet
-    - ntpd
-  listen: "kubernetes packages installed"

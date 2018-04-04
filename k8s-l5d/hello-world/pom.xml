@@ -40,11 +40,11 @@
           <version>1.0.0</version>
           <configuration>
             <imageName>${docker.image.name}</imageName>
-            <baseImage>openjdk:alpine</baseImage>
-            <entryPoint>["java"]</entryPoint>
-            <cmd>["-Djava.security.egd=file:/dev/./urandom", "-jar", "/${project.build.finalName}.jar"]</cmd>
+            <baseImage>openjdk:latest</baseImage>
+            <entryPoint>java ${JAVA_OPTS} -Djava.security.egd=file:/dev/./urandom -jar /${project.build.finalName}.jar</entryPoint>
             <!-- copy the service's jar file from target into the root directory of the image -->
             <env>
+              <JAVA_OPTS>""</JAVA_OPTS>
               <SERVER_PORT>8888</SERVER_PORT>
             </env>
             <resources>
@@ -56,9 +56,20 @@
             </resources>
             <imageTags>
               <imageTag>${project.version}</imageTag>
-              <imageTag>latest</imageTag>
             </imageTags>
+            <runs>
+              <run>apt-get update</run>
+              <run>apt-get install dnsutils net-tools -y</run>
+            </runs>
           </configuration>
+          <executions>
+            <execution>
+              <phase>install</phase>
+              <goals>
+                <goal>build</goal>
+              </goals>
+            </execution>
+          </executions>
         </plugin>
       </plugins>
     </pluginManagement>

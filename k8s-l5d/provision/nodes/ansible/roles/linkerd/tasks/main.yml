@@ -1,0 +1,12 @@
+---
+- name: create linkerd namespace
+  command: kubectl create ns linkerd
+  become_user: vagrant
+
+- name: apply linkerd rbac descriptor
+  command: kubectl apply -n linkerd -f /vagrant/descriptors/linkerd-rbac.yml
+  become_user: vagrant
+
+- name: apply linkerd descriptor
+  command: kubectl apply -n linkerd -f /vagrant/descriptors/linkerd.yml
+  become_user: vagrant

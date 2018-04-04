@@ -1,0 +1,12 @@
+---
+- name: package cleanup
+  command: package-cleanup -y --oldkernels --count=1
+
+- name: clean-up yum repository
+  command: yum clean all
+
+- name: delete unnecessary directories
+  file: path={{ item }} state=absent
+  with_items:
+    - /home/vagrant/.ansible
+    - /var/cache/yum

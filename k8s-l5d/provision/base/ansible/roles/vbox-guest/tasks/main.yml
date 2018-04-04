@@ -17,7 +17,7 @@
 
 - name: install vbox guest additions
   command: /media/cdrom/VBoxLinuxAdditions.run --nox11
-  notify: vbox guest additions installed
+  notify: "vbox guest additions installed"
 
 - name: umount VBoxGuestAdditions.iso
   mount:
@@ -30,11 +30,5 @@
     regexp: '^/home/vagrant/VBoxGuestAdditions.iso'
     state: absent
 
-- name: clean-up yum repository
-  command: yum clean all
-
-- name: housekeeping
-  file: path={{ item }} state=absent
-  with_items:
-    - /home/vagrant/VBoxGuestAdditions.iso
-    - /var/cache/yum
+- name: delete vbox guest additions iso
+  file: path=/home/vagrant/VBoxGuestAdditions.iso state=absent

@@ -1,0 +1,5 @@
+---
+host_name: "{{ inventory_hostname }}"
+host_addr: "{{ hostvars[host_name]['ansible_host'] }}"
+rev_addr: "{{ host_addr.split('.')[2] }}.{{ host_addr.split('.')[1] }}.{{ host_addr.split('.')[0] }}"
+subnet: "{{ host_addr.split('.')[0] }}.{{ host_addr.split('.')[1] }}.{{ host_addr.split('.')[2] }}.0/24"

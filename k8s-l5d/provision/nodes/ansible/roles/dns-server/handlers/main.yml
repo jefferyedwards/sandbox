@@ -1,0 +1,4 @@
+---
+- name: enable named
+  service: name=named enabled=yes state=started
+  listen: "enable named"

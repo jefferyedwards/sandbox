@@ -1,0 +1,42 @@
+options {
+  listen-on port 53 { {{ host_addr }}; };
+  directory   "/var/named";
+  dump-file   "/var/named/data/cache_dump.db";
+  statistics-file "/var/named/data/named_stats.txt";
+  memstatistics-file "/var/named/data/named_mem_stats.txt";
+  allow-query { any; };
+  recursion no;
+  dnssec-enable yes;
+  dnssec-validation yes;
+  bindkeys-file "/etc/named.iscdlv.key";
+  managed-keys-directory "/var/named/dynamic";
+  pid-file "/run/named/named.pid";
+  session-keyfile "/run/named/session.key";
+};
+
+logging {
+  channel default_debug {
+    file "data/named.run";
+    severity dynamic;
+  };
+};
+
+zone "." IN {
+  type hint;
+  file "named.ca";
+};
+
+zone "local" IN {
+  type master;
+  file "db.{{ host_name }}";
+  allow-update { none; };
+};
+
+zone "{{ rev_addr }}.in-addr.arpa" IN {
+  type master;
+  file "db.{{ rev_addr }}";
+  allow-update { none; };
+};
+
+include "/etc/named.rfc1912.zones";
+include "/etc/named.root.key";

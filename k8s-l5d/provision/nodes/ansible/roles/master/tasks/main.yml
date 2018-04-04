@@ -1,0 +1,40 @@
+---
+- stat:
+    path: /etc/kubernetes/admin.conf
+  register: kubernetes
+
+- name: initialize kubernetes master
+  shell: kubeadm init --apiserver-advertise-address={{ ansible_host }} --pod-network-cidr=10.244.0.0/16 | sed -nr 's/^.*(kubeadm join.*)$/\1/p'
+  when: not kubernetes.stat.exists
+  register: kubeadm_init
+
+- copy:
+    content: "{{ kubeadm_init.stdout }}"
+    dest: /vagrant/.vagrant/kubeadm_join
+  when: kubeadm_init.rc == 0
+
+- file:
+    path: /home/vagrant/.kube
+    state: directory
+    owner: vagrant
+    group: vagrant
+    mode: 0700
+  when: kubeadm_init.rc == 0
+
+- command: cp /etc/kubernetes/admin.conf /home/vagrant/.kube/config
+  when: kubeadm_init.rc == 0
+
+- file:
+    path: /home/vagrant/.kube/config
+    owner: vagrant
+    group: vagrant
+    mode: 0600
+  when: kubeadm_init.rc == 0
+
+- name: install flannel
+  command: kubectl apply -f /vagrant/descriptors/kube-flannel.yml
+  become_user: vagrant
+
+- name: allow scheduling of pods on master node
+  command: kubectl taint nodes --all node-role.kubernetes.io/master-
+  become_user: vagrant

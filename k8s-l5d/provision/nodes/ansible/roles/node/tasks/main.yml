@@ -1,0 +1,7 @@
+---
+- name: load kubeadm join command
+  command: cat /vagrant/.vagrant/kubeadm_join
+  register: kubeadm_join
+
+- name: join kubernetes cluster
+  command: "{{ kubeadm_join.stdout}}"

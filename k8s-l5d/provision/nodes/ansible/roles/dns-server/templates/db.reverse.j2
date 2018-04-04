@@ -1,0 +1,11 @@
+$TTL 86400    ; default ttl for records without a specified lifetime
+@    IN  SOA  {{ host_name }}.local.  root.local. (
+     1518204800   ;  serial number
+     3600         ;  ns refresh
+     1800         ;  ns retry
+     604800       ;  authority expiry
+     86400       );  min (RFC2308 §4)
+@    IN  NS   {{ host_name }}.local.
+{% for host in groups['all'] %}
+{{ hostvars[host]['ansible_host'].split('.')[3] }}  IN  PTR  {{ host }}.local.
+{% endfor %}

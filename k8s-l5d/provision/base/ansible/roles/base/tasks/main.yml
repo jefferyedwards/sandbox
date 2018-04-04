@@ -1,0 +1,82 @@
+---
+- name: set selinux to disabled
+  lineinfile:
+    path: /etc/selinux/config
+    regexp: '^SELINUX='
+    line: 'SELINUX=disabled'
+
+- name: disable swap
+  command: swapoff -a
+
+- name: remove reference to swap in /etc/fstab
+  lineinfile: dest=/etc/fstab regexp='^.*swap.*$' state=absent
+
+- name: uninstall wpa_supplicant package
+  yum: name=wpa_supplicant state=absent
+
+- name: uninstall vbox guest additions
+  shell: /opt/VBoxGuestAdditions*/uninstall.sh
+  args:
+    removes: /usr/share/VBoxGuestAdditions
+
+- name: update /etc/sysctl.d/default.conf
+  blockinfile:
+    create: yes
+    dest: /etc/sysctl.d/default.conf
+    owner: root
+    group: root
+    mode: 0644
+    block: |
+      # required by k8s
+      net.bridge.bridge-nf-call-ip6tables = 1
+      net.bridge.bridge-nf-call-iptables = 1
+      # disable ipv6
+      net.ipv6.conf.all.disable_ipv6 = 1
+      net.ipv6.conf.default.disable_ipv6 = 1
+      net.ipv6.conf.lo.disable_ipv6 = 1
+      net.ipv6.conf.eth0.disable_ipv6 = 1
+      net.ipv6.conf.eth1.disable_ipv6 = 1
+
+- name: sysctl --system
+  command: sysctl --system
+
+- name: install docker repo
+  yum_repository:
+    name: docker
+    description: Dockeer Repository
+    baseurl: https://download.docker.com/linux/centos/7/$basearch/stable
+    enabled: yes
+    gpgcheck: yes
+    gpgkey:
+      - https://download.docker.com/linux/centos/gpg
+
+- name: install kubernetes repo
+  yum_repository:
+    name: kubernetes
+    description: Kubernetes Repository
+    baseurl: https://packages.cloud.google.com/yum/repos/kubernetes-el7-x86_64
+    enabled: yes
+    gpgcheck: yes
+    gpgkey:
+      - https://packages.cloud.google.com/yum/doc/yum-key.gpg
+      - https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
+
+- name: install packages
+  yum: name={{ item }} state=latest update_cache=yes
+  with_items:
+  - kernel
+  - epel-release
+
+- name: install packages
+  yum: name={{ item }} state=latest update_cache=yes
+  with_items:
+  - bind-utils
+  - device-mapper-persistent-data
+  - docker-ce
+  - dkms
+  - java-1.8.0-openjdk
+  - kernel-devel
+  - kubeadm
+  - net-tools
+  - ntp
+  notify: packages installed

@@ -1,11 +1,11 @@
 ---
-- name:  Base Stage 1 Playbook
+- name:  Node Playbook
   hosts: all
   gather_facts: false
   remote_user: vagrant
   become: yes
   become_method: sudo
   vars:
-    use_proxy: false
+    kubeadm_join: "{{ lookup('file', '/vagrant/kubeadm_join') }}"
   roles:
-    - stage1
+    - node
