@@ -1,21 +1,19 @@
 ---
-# RBAC configs for linkerd
-# grant linkerd/namerd permissions to enable service discovery
 kind: ClusterRole
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: linkerd-endpoints-reader
 rules:
-  - apiGroups: [""] # "" indicates the core API group
-    resources: ["endpoints", "services", "pods"]
-    verbs: ["get", "list", "watch"]
+  - apiGroups: [ "" ]
+    resources: [ "endpoints", "pods", "services" ]
+    verbs: [ "get", "list", "watch" ]
   - apiGroups: [ "extensions" ]
     resources: [ "ingresses" ]
-    verbs: [ "list", "watch" ]
+    verbs: [ "get", "list", "watch" ]
 
 ---
 kind: ClusterRoleBinding
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: linkerd-role-binding
 subjects:

@@ -1,7 +1,7 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
 
-hosts = [ "k8s-master", "k8s-node01", "k8s-node02" ]
+hosts = [ "k8s-master", "k8s-worker1", "k8s-worker2" ]
 text = File.read('hosts')
 
 Vagrant.configure("2") do |config|

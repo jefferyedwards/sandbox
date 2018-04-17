@@ -35,6 +35,6 @@
   command: kubectl apply -f /vagrant/descriptors/kube-flannel.yml
   become_user: vagrant
 
-- name: allow scheduling of pods on master node
-  command: kubectl taint nodes --all node-role.kubernetes.io/master-
-  become_user: vagrant
+# - name: allow scheduling of pods on master node
+#   command: kubectl taint nodes --all node-role.kubernetes.io/master-
+#   become_user: vagrant

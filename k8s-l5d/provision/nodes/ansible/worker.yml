@@ -1,5 +1,5 @@
 ---
-- name:  Node Playbook
+- name:  Worker Playbook
   hosts: all
   gather_facts: false
   remote_user: vagrant
@@ -8,4 +8,4 @@
   vars:
     kubeadm_join: "{{ lookup('file', '/vagrant/kubeadm_join') }}"
   roles:
-    - node
+    - worker

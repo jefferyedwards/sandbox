@@ -16,13 +16,6 @@ spec:
         app: world
     spec:
       dnsPolicy: ClusterFirst
-      hostAliases:
-      - ip: "192.168.33.200"
-        hostnames: [ "k8s-master.local", "k8s-master" ]
-      - ip: "192.168.33.201"
-        hostnames: [ "k8s-node01.local", "k8s-node01" ]
-      - ip: "192.168.33.202"
-        hostnames: [ "k8s-node02.local", "k8s-node02" ]
       restartPolicy: Always
       containers:
       - name: world
@@ -32,6 +25,10 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: spec.nodeName
+        - name: POD_IP
+          valueFrom:
+            fieldRef:
+              fieldPath: status.podIP
         - name: JAVA_OPTS
           value: -Dhttp.proxyHost=$(NODE_NAME) -Dhttp.proxyPort=4140
         ports:
@@ -44,9 +41,10 @@ apiVersion: v1
 metadata:
   name: world-service
 spec:
-  ports:
-  - port: 80
-    targetPort: service
   selector:
     app: world
-  type: ClusterIP
+  clusterIP: None
+  ports:
+  - name: http
+    port: 80
+    targetPort: 8888
