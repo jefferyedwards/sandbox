@@ -1,0 +1,25 @@
+server:
+  port: 8080
+keycloak:
+  base-url: http://playground:8180/auth
+  realm-name: demo
+  realm-url: ${keycloak.base-url}/realms/${keycloak.realm-name}
+spring:
+  security:
+    oauth2:
+      client:
+        registration:
+          demo:
+            client-id: service-auth
+            client-name: Demo Service Auth
+            client-secret: a9c97bcd-5906-4370-9292-a01a98352205
+            provider: keycloak
+            authorization-grant-type: authorization_code
+            scope: openid, profile
+            redirect-uri-template: '{baseUrl}/login/oauth2/code/{registrationId}'
+        provider:
+          keycloak:
+            authorization-uri: ${keycloak.realm-url}/protocol/openid-connect/auth
+            jwk-set-uri: ${keycloak.realm-url}/protocol/openid-connect/certs
+            token-uri: ${keycloak.realm-url}/protocol/openid-connect/token
+            user-name-attribute: preferred_username

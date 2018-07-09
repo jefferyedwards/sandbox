@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+<title>Home</title>
+</head>
+<body>
+  <h1>Home</h1>
+  <ul>
+    <li><a href="#" th:href="@{/protected}">Demo Service Auth</a></li>
+    <li sec:authorize="hasRole('TOP-SECRET')"><a href="#" th:href="@{/top-secret}">Top Secret</a></li>
+    <li sec:authorize="hasRole('SECRET')"><a href="#" th:href="@{/secret}">Secret</a></li>
+    <li sec:authorize="hasRole('CONFIDENTIAL')"><a href="#" th:href="@{/confidential}">Confidential</a></li>
+    <li th:if="${principal}"><a href="#" th:href="@{/account}">Account</a></li>
+  </ul>
+  <form action="logout" method="post" th:if="${principal}">
+    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+    <button>Logout</button>
+  </form>
+</body>
+</html>

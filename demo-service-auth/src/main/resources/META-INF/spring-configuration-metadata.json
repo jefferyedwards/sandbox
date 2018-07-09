@@ -1,0 +1,30 @@
+{
+  "hints": [],
+  "groups": [
+    {
+      "name": "keycloak",
+      "type": "net.edwardsonthe.keycloak.KeycloakProperties",
+      "sourceType": "net.edwardsonthe.keycloak.KeycloakProperties"
+    }
+  ],
+  "properties": [
+    {
+      "sourceType": "net.edwardsonthe.keycloak.KeycloakProperties",
+      "name": "keycloak.base-url",
+      "description": "The base URL of the Keycloak server.",
+      "type": "java.net.URL"
+    },
+    {
+      "sourceType": "net.edwardsonthe.keycloak.KeycloakProperties",
+      "name": "keycloak.realm-name",
+      "description": "The associated Keycloak realm. A realm manages a set of users, credentials, roles, and groups. A user belongs to and logs into a realm. Realms are isolated from one another and can only manage and authenticate the users that they control.",
+      "type": "java.lang.String"
+    },
+    {
+      "sourceType": "net.edwardsonthe.keycloak.KeycloakProperties",
+      "name": "keycloak.realm-url",
+      "description": "The URL of the associated Keycloak realm.",
+      "type": "java.net.URL"
+    }
+  ]
+}
