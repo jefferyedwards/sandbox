@@ -19,6 +19,7 @@ import org.springframework.web.client.RestTemplate;
 import net.edwardsonthe.keycloak.KeycloakLogoutHandler;
 import net.edwardsonthe.keycloak.KeycloakOauth2UserService;
 import net.edwardsonthe.keycloak.KeycloakProperties;
+import net.edwardsonthe.security.CustomMethodSecurityConfiguration;
 
 @Configuration
 @EnableGlobalMethodSecurity(prePostEnabled = true)
@@ -26,6 +27,11 @@ public class ApplicationConfiguration {
 
   @Autowired
   KeycloakProperties keycloakProperties;
+
+  @Bean
+  CustomMethodSecurityConfiguration customMethodSecurityConfiguration() {
+    return new CustomMethodSecurityConfiguration();
+  }
 
   @Bean
   LogoutHandler logoutHandler() {

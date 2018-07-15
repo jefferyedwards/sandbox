@@ -15,7 +15,7 @@ import org.springframework.web.servlet.ModelAndView;
 @Controller
 public class ApplicationController {
 
-  @PreAuthorize("hasRole('CONFIDENTIAL')")
+  @PreAuthorize("hasRole('CONFIDENTIAL') && isPermitted('/confidential')")
   @GetMapping("/confidential")
   public ModelAndView confidential(Principal principal) {
     return new ModelAndView("confidential", Collections.singletonMap("principal", principal));
@@ -34,13 +34,13 @@ public class ApplicationController {
     return "redirect:" + user.getIssuer() + "/account?referrer=" + user.getIdToken().getAuthorizedParty();
   }
 
-  @PreAuthorize("hasRole('SECRET')")
+  @PreAuthorize("hasRole('SECRET') && isPermitted('/secret')")
   @GetMapping("/secret")
   public ModelAndView secret(Principal principal) {
     return new ModelAndView("secret", Collections.singletonMap("principal", principal));
   }
 
-  @PreAuthorize("hasRole('TOP-SECRET')")
+  @PreAuthorize("hasRole('TOP-SECRET') && isPermitted('/top-secret')")
   @GetMapping("/top-secret")
   public ModelAndView topSecret(Principal principal) {
     return new ModelAndView("top-secret", Collections.singletonMap("principal", principal));
