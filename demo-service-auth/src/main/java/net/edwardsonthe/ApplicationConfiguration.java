@@ -15,10 +15,13 @@ import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserService;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoderJwkSupport;
 import org.springframework.security.web.authentication.logout.LogoutHandler;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import net.edwardsonthe.keycloak.KeycloakLogoutHandler;
 import net.edwardsonthe.keycloak.KeycloakOauth2UserService;
 import net.edwardsonthe.keycloak.KeycloakProperties;
+import net.edwardsonthe.security.CustomInterceptor;
 import net.edwardsonthe.security.CustomMethodSecurityConfiguration;
 
 @Configuration
@@ -40,10 +43,21 @@ public class ApplicationConfiguration {
 
   @Bean
   OidcUserService oidcUserService(OAuth2ClientProperties oauth2ClientProperties) {
-    NimbusJwtDecoderJwkSupport jwtDecoder = new NimbusJwtDecoderJwkSupport(oauth2ClientProperties.getProvider().get("keycloak").getJwkSetUri());
+    NimbusJwtDecoderJwkSupport jwtDecoder = new NimbusJwtDecoderJwkSupport(
+        oauth2ClientProperties.getProvider().get("keycloak").getJwkSetUri());
     SimpleAuthorityMapper authoritiesMapper = new SimpleAuthorityMapper();
     authoritiesMapper.setConvertToUpperCase(true);
     return new KeycloakOauth2UserService(authoritiesMapper, jwtDecoder);
+  }
+
+  @Bean
+  WebMvcConfigurer webMvcConfigurer() {
+    return new WebMvcConfigurer() {
+      @Override
+      public void addInterceptors(InterceptorRegistry registry) {
+        registry.addInterceptor(new CustomInterceptor());
+      }
+    };
   }
 
   @Bean
