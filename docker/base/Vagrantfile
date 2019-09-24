@@ -1,0 +1,33 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+Vagrant.configure("2") do |config|
+
+  config.hostmanager.enabled = false if Vagrant.has_plugin?("vagrant-hostmanager")
+  config.vbguest.auto_update = false if Vagrant.has_plugin?("vagrant-vbguest")
+
+  config.vm.box = "centos/7"
+  config.vm.box_check_update = false
+  config.vm.box_download_insecure = true
+
+  config.vm.provision "ansible" do |ansible|
+  	ansible.playbook = "ansible/base.yml"
+  	ansible.compatibility_mode = "2.0"
+  end
+
+  config.vm.provision :reload
+
+  config.vm.provision "ansible" do |ansible|
+    ansible.playbook = "ansible/cleanup.yml"
+    ansible.compatibility_mode = "2.0"
+  end
+
+  config.vm.provider :virtualbox do |vb|
+    vb.gui = false
+    vb.customize ["modifyvm", :id, "--name", "base"]
+    vb.customize ["modifyvm", :id, "--cpus", "2"]
+    vb.customize ["modifyvm", :id, "--cpuexecutioncap", "100"]
+    vb.customize ["modifyvm", :id, "--memory", "1024"]
+  end
+
+end

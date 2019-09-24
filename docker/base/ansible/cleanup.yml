@@ -1,0 +1,11 @@
+---
+- name:  Cleanup Playbook
+  hosts: all
+  gather_facts: false
+  remote_user: vagrant
+  become: yes
+  become_method: sudo
+  vars:
+    install_vbox_guest: true
+  roles:
+    - cleanup

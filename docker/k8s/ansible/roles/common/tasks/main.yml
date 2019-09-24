@@ -1,0 +1,8 @@
+---
+- name: cleanup /etc/hosts
+  lineinfile: dest=/etc/hosts regexp='^.*{{ inventory_hostname }}$' state=absent
+
+- name: configure /etc/hosts
+  lineinfile: dest=/etc/hosts regexp='.*{{ item }}$' line="{{ hostvars[item]['ansible_host'] }} {{ item }}.local {{ item }}" state=present
+  when: hostvars[item]['ansible_host'] is defined
+  with_items: "{{ groups.all }}"

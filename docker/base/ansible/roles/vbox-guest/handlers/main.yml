@@ -1,0 +1,7 @@
+---
+- name: enable vbox guest services
+  service: name={{ item }} enabled=yes state=stopped
+  with_items:
+  - vboxadd
+  - vboxadd-service
+  listen: "vbox guest additions installed"

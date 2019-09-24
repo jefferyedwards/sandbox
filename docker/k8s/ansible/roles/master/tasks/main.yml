@@ -1,0 +1,43 @@
+---
+- stat:
+    path: /etc/kubernetes/admin.conf
+  register: kubernetes
+
+- debug:
+    msg: "issue command: kubeadm init --apiserver-advertise-address={{ ansible_host }} --pod-network-cidr=10.244.0.0/16"
+  when: not kubernetes.stat.exists
+
+- name: initialize kubernetes master
+  shell: kubeadm init --apiserver-advertise-address={{ ansible_host }} --pod-network-cidr=10.244.0.0/16 | sed -n '/^kubeadm join/{N; p;}' | sed 'N; s/\\\n *//'
+  when: not kubernetes.stat.exists
+  register: kubeadm_join
+
+- debug:
+    msg: "kubeadm join: {{ kubeadm_join.stdout }}"
+
+- copy:
+    content: "{{ kubeadm_join.stdout }}"
+    dest: /vagrant/.vagrant/kubeadm_join
+  when: kubeadm_join.rc == 0
+
+- file:
+    path: /home/vagrant/.kube
+    state: directory
+    owner: vagrant
+    group: vagrant
+    mode: 0700
+  when: kubeadm_join.rc == 0
+
+- command: cp /etc/kubernetes/admin.conf /home/vagrant/.kube/config
+  when: kubeadm_join.rc == 0
+
+- file:
+    path: /home/vagrant/.kube/config
+    owner: vagrant
+    group: vagrant
+    mode: 0600
+  when: kubeadm_join.rc == 0
+
+- name: install flannel
+  command: kubectl apply -f /vagrant/descriptors/kube-flannel.yml
+  become_user: vagrant

@@ -1,0 +1,50 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: world
+  labels:
+    app: world
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: world
+  template:
+    metadata:
+      labels:
+        app: world
+    spec:
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      containers:
+      - name: world
+        image: jefferysedwards/world:latest
+        env:
+        - name: NODE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
+        - name: POD_IP
+          valueFrom:
+            fieldRef:
+              fieldPath: status.podIP
+        - name: JAVA_OPTS
+          value: -Dhttp.proxyHost=$(NODE_NAME) -Dhttp.proxyPort=4140
+        ports:
+        - name: service
+          containerPort: 8888
+
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: world-service
+spec:
+  selector:
+    app: world
+  clusterIP: None
+  ports:
+  - name: http
+    port: 80
+    targetPort: 8888

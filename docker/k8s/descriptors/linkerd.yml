@@ -1,0 +1,147 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: l5d-config
+  namespace: linkerd
+data:
+  config.yml: |-
+    admin:
+      ip: 0.0.0.0
+      port: 9990
+    namers:
+    - kind: io.l5d.k8s
+    - kind: io.l5d.k8s
+      prefix: /io.l5d.k8s.http
+      transformers:
+      - kind: io.l5d.k8s.daemonset
+        namespace: linkerd
+        port: http-incoming
+        service: l5d
+        hostNetwork: true
+    - kind: io.l5d.rewrite
+      prefix: /portNsSvcToK8s
+      pattern: "/{port}/{ns}/{svc}"
+      name: "/k8s/{ns}/{port}/{svc}"
+    telemetry:
+    - kind: io.l5d.prometheus
+    - kind: io.l5d.recentRequests
+      sampleRate: 0.25
+    usage:
+      orgId: servicemesh
+    routers:
+    - label: http-outgoing
+      protocol: http
+      servers:
+      - port: 4140
+        ip: 0.0.0.0
+      dtab: |
+        /ph  => /$/io.buoyant.rinet ;
+        /svc => /ph/80 ;
+        /svc => /$/io.buoyant.porthostPfx/ph ;
+        /k8s => /#/io.l5d.k8s.http ;
+        /portNsSvc => /#/portNsSvcToK8s ;
+        /host => /portNsSvc/http/default ;
+        /host => /portNsSvc/http ;
+        /svc => /$/io.buoyant.http.domainToPathPfx/host ;
+      client:
+        kind: io.l5d.static
+        configs:
+        - prefix: "/$/io.buoyant.rinet/443/{service}"
+          tls:
+            commonName: "{service}"
+    - label: http-incoming
+      protocol: http
+      servers:
+      - port: 4141
+        ip: 0.0.0.0
+      interpreter:
+        kind: default
+        transformers:
+        - kind: io.l5d.k8s.localnode
+          hostNetwork: true
+      dtab: |
+        /k8s => /#/io.l5d.k8s ;
+        /portNsSvc => /#/portNsSvcToK8s ;
+        /host => /portNsSvc/http/default ;
+        /host => /portNsSvc/http ;
+        /svc => /$/io.buoyant.http.domainToPathPfx/host ;
+    - protocol: http
+      label: http-ingress
+      servers:
+        - port: 80
+          ip: 0.0.0.0
+          clearContext: true
+      identifier:
+        kind: io.l5d.ingress
+      dtab: /svc => /#/io.l5d.k8s
+
+---
+apiVersion: extensions/v1beta1
+kind: DaemonSet
+metadata:
+  labels:
+    app: l5d
+  name: l5d
+  namespace: linkerd
+spec:
+  template:
+    metadata:
+      labels:
+        app: l5d
+    spec:
+      hostNetwork: true
+      volumes:
+      - name: l5d-config
+        configMap:
+          name: "l5d-config"
+      containers:
+      - name: l5d
+        image: buoyantio/linkerd:1.3.6
+        env:
+        - name: POD_IP
+          valueFrom:
+            fieldRef:
+              fieldPath: status.podIP
+        - name: NODE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
+        args: [ "/io.buoyant/linkerd/config/config.yml" ]
+        ports:
+        - name: admin
+          containerPort: 9990
+        - name: http-outgoing
+          containerPort: 4140
+          hostPort: 4140
+        - name: http-incoming
+          containerPort: 4141
+        - name: http-ingress
+          containerPort: 80
+        volumeMounts:
+        - name: "l5d-config"
+          mountPath: "/io.buoyant/linkerd/config"
+          readOnly: true
+      - name: kubectl
+        image: buoyantio/kubectl:v1.8.5
+        args: [ "proxy", "-p", "8001" ]
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: l5d
+  namespace: linkerd
+spec:
+  selector:
+    app: l5d
+  type: LoadBalancer
+  ports:
+  - name: admin
+    port: 9990
+  - name: http-outgoing
+    port: 4140
+  - name: http-incoming
+    port: 4141
+  - name: http-ingress
+    port: 80

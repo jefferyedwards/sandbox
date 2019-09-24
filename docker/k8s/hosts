@@ -1,0 +1,10 @@
+[masters]
+master    ansible_host=192.168.33.200  ansible_port=22  ansible_user='vagrant'  ansible_ssh_private_key_file='~/.ssh/id_rsa'  play=master.yml
+
+[workers]
+worker1	  ansible_host=192.168.33.201  ansible_port=22  ansible_user='vagrant'  ansible_ssh_private_key_file='~/.ssh/id_rsa'  play=worker.yml
+worker2   ansible_host=192.168.33.202  ansible_port=22  ansible_user='vagrant'  ansible_ssh_private_key_file='~/.ssh/id_rsa'  play=worker.yml
+
+[all_groups:children]
+masters
+workers

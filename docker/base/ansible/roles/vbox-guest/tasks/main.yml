@@ -1,0 +1,34 @@
+---
+- name: stage vbox guest additions iso
+  copy:
+    src: /usr/share/virtualbox/VBoxGuestAdditions.iso
+    dest: /home/vagrant/VBoxGuestAdditions.iso
+    owner: vagrant
+    group: vagrant
+    mode: 0644
+
+- name: mount vbox guest additions iso
+  mount:
+    name: /media/cdrom
+    src: /home/vagrant/VBoxGuestAdditions.iso
+    fstype: iso9660
+    opts: noauto
+    state: mounted
+
+- name: install vbox guest additions
+  command: /media/cdrom/VBoxLinuxAdditions.run --nox11
+  notify: "vbox guest additions installed"
+
+- name: umount VBoxGuestAdditions.iso
+  mount:
+    name: /media/cdrom
+    state: unmounted
+
+- name: clean-up /etc/fstab
+  lineinfile:
+    path: /etc/fstab
+    regexp: '^/home/vagrant/VBoxGuestAdditions.iso'
+    state: absent
+
+- name: delete vbox guest additions iso
+  file: path=/home/vagrant/VBoxGuestAdditions.iso state=absent

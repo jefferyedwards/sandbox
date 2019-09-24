@@ -1,0 +1,37 @@
+---
+- name: reload the systemd manager configuration
+  command: systemctl daemon-reload
+  listen:
+    - "docker installed"
+    - "kubernetes installed"
+
+- name: add vagrant user to docker group
+  user:
+    name: vagrant
+    groups: docker
+    append: yes
+  listen: "docker installed"
+
+- name: create /etc/docker directory
+  file:
+    path: /etc/docker
+    state: directory
+    mode: '0755'
+  listen: "docker installed"
+
+- name: docker daemon configuration
+  template:
+    src: daemon.json.j2
+    dest: /etc/docker/daemon.json
+    owner: root
+    group: root
+    mode: '0600'
+  listen: "docker installed"
+
+- name: enable docker service
+  service: name=docker enabled=yes state=stopped
+  listen: "docker installed"
+
+- name: enable kubelet service
+  service: name=kubelet enabled=yes state=stopped
+  listen: "kubernetes installed"
