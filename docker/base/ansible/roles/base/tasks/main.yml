@@ -70,11 +70,14 @@
     packages:
     - bzip2
     - dkms
+    - firefox
     - gcc
     - kernel-devel
     - kernel-headers
     - make
+    - net-tools
     - perl
+    - xorg-x11-xauth
 
 - name: install docker dependent packages
   yum: name={{ packages }} state=latest update_cache=yes

@@ -38,6 +38,10 @@
     mode: 0600
   when: kubeadm_join.rc == 0
 
+- name: install dashboard
+  command: kubectl apply -f /vagrant/descriptors/kube-dashboard.yaml
+  become_user: vagrant
+
 - name: install flannel
   command: kubectl apply -f /vagrant/descriptors/kube-flannel.yml
   become_user: vagrant

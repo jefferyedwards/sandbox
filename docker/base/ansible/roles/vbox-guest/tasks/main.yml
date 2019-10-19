@@ -1,7 +1,8 @@
 ---
 - name: stage vbox guest additions iso
   copy:
-    src: /usr/share/virtualbox/VBoxGuestAdditions.iso
+    # src: /usr/share/virtualbox/VBoxGuestAdditions.iso
+    src: /Applications/VirtualBox.app/Contents/MacOS/VBoxGuestAdditions.iso
     dest: /home/vagrant/VBoxGuestAdditions.iso
     owner: vagrant
     group: vagrant
