@@ -77,7 +77,10 @@
     - make
     - net-tools
     - perl
-    - xorg-x11-xauth
+
+- name: install x11 packages
+  yum: name="@x11" state=latest update_cache=yes
+  notify: x11 installed
 
 - name: install docker dependent packages
   yum: name={{ packages }} state=latest update_cache=yes

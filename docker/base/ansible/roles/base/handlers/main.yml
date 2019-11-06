@@ -1,4 +1,11 @@
 ---
+- name: update sshd config
+  lineinfile:
+    path: /etc/ssh/sshd_config
+    regexp: '^.*X11UseLocalhost'
+    line: 'X11UseLocalhost no'
+  listen: "x11 installed"
+
 - name: reload the systemd manager configuration
   command: systemctl daemon-reload
   listen:
