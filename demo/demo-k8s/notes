@@ -1,0 +1,39 @@
+Master:
+
+ip addr show virbr0 | fgrep inet | sed -r -e 's/.*inet (.*)\/24 brd.*/\1/'
+---> 192.168.122.1
+
+sudo kubeadm init --apiserver-advertise-address=192.168.32.200 --pod-network-cidr=10.244.0.0/16
+
+Set-me up:
+
+mkdir -p $HOME/.kube
+sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+sudo chown $(id -u):$(id -g) $HOME/.kube/config
+
+Capture kubeadmin join, such as:
+
+sudo kubeadm join 192.168.122.1:6443 --token 27o17s.7iljhzdj6ro1umu3 --discovery-token-ca-cert-hash sha256:1bfd53ff6c97a9528f32d2f38b0b2dd4e7bb694279720fe17477e8edb0bbf2f2
+
+Deploy dashboard and flannel CNI:
+
+kubectl apply -f /home/jeff/workspace/sandbox/docker/k8s/descriptors/kube-flannel.yml
+kubectl apply -f /home/jeff/workspace/sandbox/docker/k8s/descriptors/kube-dashboard.yaml
+
+Workers:
+
+execute kubeadm join
+
+
+kubectl create deployment demo --image=demo:0.0.1-SNAPSHOT
+kubectl scale deployment demo --replicas=2
+
+kubectl proxy <-- for dashboard
+
+http://localhost:8001/api/v1/namespaces/kubernetes-dashboard/services/https:kubernetes-dashboard:/proxy/#/service?namespace=default
+
+get token for dashboard:
+kubectl -n kube-system get secret
+kubectl -n kube-system describe secret deployment-controller-token-xoxox
+
+kubectl port-forward service/demo-service 8080:8080 <-- expose service

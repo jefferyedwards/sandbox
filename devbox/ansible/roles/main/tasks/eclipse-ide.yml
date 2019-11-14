@@ -1,0 +1,35 @@
+---
+- name: stage eclipse tar bundle
+  get_url:
+    url: "{{ eclipse_download_url }}"
+    dest: /home/vagrant/eclipse.tar.gz
+    owner: vagrant
+    group: vagrant
+    mode: 0644
+
+- name: extract eclipse tar bundle
+  unarchive:
+    src: /home/vagrant/eclipse.tar.gz
+    remote_src: yes
+    dest: /opt
+    owner: root
+    group: root
+
+- name: delete eclipse tar bundle
+  file: path=/home/vagrant/eclipse.tar.gz state=absent
+
+- name: create an eclipse symbolic link
+  file:
+    src: /opt/eclipse/eclipse
+    dest: /usr/local/bin/eclipse
+    owner: root
+    group: root
+    state: link
+
+- name: define eclipse desktop
+  template:
+    src: eclipse-ide.desktop.j2
+    dest: /usr/share/applications/eclipse-ide.desktop
+    owner: root
+    group: root
+    mode: '0644'

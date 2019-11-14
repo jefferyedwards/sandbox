@@ -1,0 +1,15 @@
+---
+- name: create ~vagrant/.ssh directory
+  file: path=~vagrant/.ssh state=directory mode=0700
+
+- name: install ssh private keys
+  copy: src=~/.ssh/id_rsa dest=~vagrant/.ssh/id_rsa owner=vagrant group=vagrant mode=0600
+
+- name: install ssh public keys
+  copy: src=~/.ssh/id_rsa.pub dest=~vagrant/.ssh/id_rsa.pub owner=vagrant group=vagrant mode=0644
+
+- name: setup authorized keys
+  authorized_key:
+    user: vagrant
+    state: present
+    key: "{{ lookup('file', '~/.ssh/id_rsa.pub') }}"

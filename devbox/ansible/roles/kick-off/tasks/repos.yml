@@ -1,0 +1,37 @@
+---
+- name: define atom repo
+  template:
+    src: atom.repo.j2
+    dest: /etc/yum.repos.d/atom.repo
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: import atom gpg key
+  rpm_key:
+    state: present
+    key: https://packagecloud.io/AtomEditor/atom/gpgkey
+
+- name: define docker repo
+  template:
+    src: docker-ce.repo.j2
+    dest: /etc/yum.repos.d/docker-ce.repo
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: define google chrome repo
+  template:
+    src: google-chrome.repo.j2
+    dest: /etc/yum.repos.d/google-chrome.repo
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: define kubernetes repo
+  template:
+    src: kubernetes.repo.j2
+    dest: /etc/yum.repos.d/kubernetes.repo
+    owner: root
+    group: root
+    mode: '0644'
