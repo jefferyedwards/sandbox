@@ -1,6 +1,4 @@
 ---
-- include: ssh-keys.yml
-
 - name: package cleanup
   command: package-cleanup -y --oldkernels --count=1
 

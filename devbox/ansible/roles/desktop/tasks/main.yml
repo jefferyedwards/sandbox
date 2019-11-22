@@ -1,0 +1,31 @@
+---
+- name: stage eclipse tar bundle
+  get_url:
+    url: "{{ eclipse_download_url }}"
+    dest: /home/vagrant/eclipse.tar.gz
+    owner: vagrant
+    group: vagrant
+    mode: 0644
+  notify: eclipse tar bundle staged
+
+- name: install eclipse tar bundle
+  unarchive:
+    src: /home/vagrant/eclipse.tar.gz
+    remote_src: yes
+    dest: /opt
+    owner: root
+    group: root
+  notify: eclipse tar bundle installed
+
+- name: install atom package
+  yum: name="atom" state=latest update_cache=yes enablerepo="atom"
+
+- name: install google chrome package
+  yum: name="google-chrome-stable" state=latest update_cache=yes enablerepo="google-chrome"
+
+- name: install server with gui group
+  yum: name="@^server with gui" state=latest update_cache=yes
+  notify: server with gui installed
+
+- name: install cinnamon group
+  yum: name="@cinnamon" state=latest update_cache=yes

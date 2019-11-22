@@ -35,27 +35,3 @@
 - name: enable kubelet service
   service: name=kubelet enabled=yes state=stopped
   listen: "kubernetes installed"
-
-- name: set graphical runlevel
-  command: systemctl set-default graphical.target
-  listen: "cinnamon installed"
-
-- name: configure .Xclients
-  lineinfile:
-    path: ~vagrant/.Xclients
-    line: cinnamon
-    owner: vagrant
-    group: vagrant
-    mode: 0755
-    create: yes
-  listen: "cinnamon installed"
-
-- name: configure .xinitrc
-  lineinfile:
-    path: ~vagrant/.xinitrc
-    line: exec /usr/bin/cinnamon-session
-    owner: vagrant
-    group: vagrant
-    mode: 0755
-    create: yes
-  listen: "cinnamon installed"

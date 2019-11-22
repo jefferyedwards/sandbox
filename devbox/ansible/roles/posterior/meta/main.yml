@@ -1,0 +1,4 @@
+---
+dependencies:
+- { role: ssh-keys, when: "install_ssh_keys == true" }
+- { role: vbox-guest, when: "install_vbox_guest == true" }

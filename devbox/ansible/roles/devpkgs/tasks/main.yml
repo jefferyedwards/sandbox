@@ -1,31 +1,15 @@
 ---
-- include: eclipse-ide.yml
-
 - name: install packages
   yum: name={{ packages }} state=latest update_cache=yes
   vars:
     packages:
     - dkms
-    - firefox
     - kernel-devel
     - kernel-headers
     - net-tools
 
 - name: install development tools group
   yum: name="@development tools" state=latest update_cache=yes
-
-- name: install server with gui group
-  yum: name="@^server with gui" state=latest update_cache=yes
-
-- name: install cinnamon group
-  yum: name="@cinnamon" state=latest update_cache=yes
-  notify: cinnamon installed
-
-- name: install atom package
-  yum: name="atom" state=latest update_cache=yes enablerepo="atom"
-
-- name: install google chrome package
-  yum: name="google-chrome-stable" state=latest update_cache=yes enablerepo="google-chrome"
 
 - name: install docker packages
   yum: name={{ packages }} state=latest update_cache=yes enablerepo="docker-ce"

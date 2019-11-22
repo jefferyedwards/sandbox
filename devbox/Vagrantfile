@@ -14,23 +14,30 @@ Vagrant.configure("2") do |config|
   config.ssh.forward_x11 = true
 
   config.vm.provision "ansible" do |ansible|
-  	ansible.playbook = "ansible/kick-off.yml"
+  	ansible.playbook = "ansible/anterior.yml"
   	ansible.compatibility_mode = "2.0"
   end
 
   config.vm.provision :reload
 
   config.vm.provision "ansible" do |ansible|
-  	ansible.playbook = "ansible/main.yml"
+  	ansible.playbook = "ansible/devpkgs.yml"
   	ansible.compatibility_mode = "2.0"
   end
 
-    config.vm.provision :reload
+  config.vm.provision :reload
 
-    config.vm.provision "ansible" do |ansible|
-      ansible.playbook = "ansible/wrap-up.yml"
-      ansible.compatibility_mode = "2.0"
-    end
+  config.vm.provision "ansible" do |ansible|
+    ansible.playbook = "ansible/desktop.yml"
+    ansible.compatibility_mode = "2.0"
+  end
+
+  config.vm.provision :reload
+
+  config.vm.provision "ansible" do |ansible|
+    ansible.playbook = "ansible/posterior.yml"
+    ansible.compatibility_mode = "2.0"
+  end
 
   config.vm.provider :virtualbox do |vb|
     vb.gui = false

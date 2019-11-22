@@ -1,0 +1,24 @@
+---
+- name: delete vbox guest additions iso
+  file: path=/home/vagrant/VBoxGuestAdditions.iso state=absent
+  listen: "vbox guest additions iso staged"
+
+- name: umount VBoxGuestAdditions.iso
+  mount:
+    name: /media/cdrom
+    state: unmounted
+  listen: "vbox guest additions iso mounted"
+
+- name: clean-up /etc/fstab
+  lineinfile:
+    path: /etc/fstab
+    regexp: '^/home/vagrant/VBoxGuestAdditions.iso'
+    state: absent
+  listen: "vbox guest additions iso mounted"
+
+- name: enable vbox guest services
+  service: name={{ item }} enabled=yes state=stopped
+  with_items:
+  - vboxadd
+  - vboxadd-service
+  listen: "vbox guest additions installed"

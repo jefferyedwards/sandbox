@@ -1,22 +1,7 @@
 ---
-- name: stage eclipse tar bundle
-  get_url:
-    url: "{{ eclipse_download_url }}"
-    dest: /home/vagrant/eclipse.tar.gz
-    owner: vagrant
-    group: vagrant
-    mode: 0644
-
-- name: extract eclipse tar bundle
-  unarchive:
-    src: /home/vagrant/eclipse.tar.gz
-    remote_src: yes
-    dest: /opt
-    owner: root
-    group: root
-
 - name: delete eclipse tar bundle
   file: path=/home/vagrant/eclipse.tar.gz state=absent
+  listen: "eclipse tar bundle staged"
 
 - name: create an eclipse symbolic link
   file:
@@ -25,6 +10,7 @@
     owner: root
     group: root
     state: link
+  listen: "eclipse tar bundle installed"
 
 - name: define eclipse desktop
   template:
@@ -33,3 +19,8 @@
     owner: root
     group: root
     mode: '0644'
+  listen: "eclipse tar bundle installed"
+
+- name: set graphical runlevel
+  command: systemctl set-default graphical.target
+  listen: "server with gui installed"

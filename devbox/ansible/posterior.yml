@@ -1,9 +1,12 @@
 ---
-- name:  Main Playbook
+- name: Posterior Playbook
   hosts: all
   gather_facts: false
   remote_user: vagrant
   become: yes
   become_method: sudo
+  vars:
+    install_ssh_keys: true
+    install_vbox_guest: true
   roles:
-    - main
+    - posterior
