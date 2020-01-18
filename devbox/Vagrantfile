@@ -3,7 +3,7 @@
 
 Vagrant.configure("2") do |config|
 
-#  config.hostmanager.enabled = false if Vagrant.has_plugin?("vagrant-hostmanager")
+  config.hostmanager.enabled = false if Vagrant.has_plugin?("vagrant-hostmanager")
   config.vbguest.auto_update = false if Vagrant.has_plugin?("vagrant-vbguest")
 
   config.vm.box = "centos/7"

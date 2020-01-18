@@ -1,0 +1,3 @@
+---
+dependencies:
+- { role: proxy, when: "use_proxy == true" }

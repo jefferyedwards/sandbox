@@ -38,6 +38,12 @@
 - name: sysctl --system
   command: sysctl --system
 
+- name: increase yum timeout
+  lineinfile: dest=/etc/yum.conf regexp='^timeout=' line='timeout=900'
+
+- name: install the CA root certificate bundle
+  yum: name='ca-certificates' state=latest update_cache=yes
+
 - name: upgrade all packages
   yum: name='*' state=latest update_cache=yes
 

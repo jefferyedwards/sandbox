@@ -1,10 +1,4 @@
 ---
-- name: reload the systemd manager configuration
-  command: systemctl daemon-reload
-  listen:
-    - "docker installed"
-    - "kubernetes installed"
-
 - name: add vagrant user to docker group
   user:
     name: vagrant
@@ -35,3 +29,9 @@
 - name: enable kubelet service
   service: name=kubelet enabled=yes state=stopped
   listen: "kubernetes installed"
+
+- name: reload the systemd manager configuration
+  command: systemctl daemon-reload
+  listen:
+    - "docker installed"
+    - "kubernetes installed"
