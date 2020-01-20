@@ -4,14 +4,14 @@
     name: vagrant
     groups: docker
     append: yes
-  listen: "docker installed"
+  listen: docker installed
 
 - name: create /etc/docker directory
   file:
     path: /etc/docker
     state: directory
     mode: '0755'
-  listen: "docker installed"
+  listen: docker installed
 
 - name: docker daemon configuration
   template:
@@ -20,18 +20,31 @@
     owner: root
     group: root
     mode: '0600'
-  listen: "docker installed"
+  listen: docker installed
 
 - name: enable docker service
   service: name=docker enabled=yes state=stopped
-  listen: "docker installed"
+  listen: docker installed
 
 - name: enable kubelet service
-  service: name=kubelet enabled=yes state=stopped
-  listen: "kubernetes installed"
+  service: name=kubelet enabled=no state=stopped
+  listen: kubernetes installed
 
 - name: reload the systemd manager configuration
   command: systemctl daemon-reload
   listen:
-    - "docker installed"
-    - "kubernetes installed"
+    - docker installed
+    - kubernetes installed
+
+- name: delete gradle bundle
+  file: path=/home/vagrant/gradle.zip state=absent
+  listen: gradle bundle staged
+
+- name: create gradle symbolic link
+  file:
+    src: "/opt/{{ gradle_version }}/bin/gradle"
+    dest: /usr/local/bin/gradle
+    owner: root
+    group: root
+    state: link
+  listen: gradle bundle installed

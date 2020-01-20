@@ -6,7 +6,7 @@
   become: yes
   become_method: sudo
   vars:
-    install_ssh_keys: true
+    install_ssh_keys: false
     install_vbox_guest: true
   roles:
     - posterior

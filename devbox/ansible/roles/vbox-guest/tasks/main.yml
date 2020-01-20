@@ -1,4 +1,7 @@
 ---
+- debug:
+    msg: vbox_guest_additions_url is defined as {{ vbox_guest_additions_url }}
+
 - name: stage vbox guest additions iso
   get_url:
     url: "{{ vbox_guest_additions_url }}"

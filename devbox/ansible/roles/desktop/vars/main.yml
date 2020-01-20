@@ -1,2 +1,3 @@
 ---
-eclipse_download_url: "http://ftp.ussg.iu.edu/eclipse/technology/epp/downloads/release/2019-12/R/eclipse-jee-2019-12-R-linux-gtk-x86_64.tar.gz"
+eclipse_version: "2019-12"
+eclipse_download_url: "http://ftp.ussg.iu.edu/eclipse/technology/epp/downloads/release/{{ eclipse_version }}/R/eclipse-jee-{{ eclipse_version }}-R-linux-gtk-x86_64.tar.gz"

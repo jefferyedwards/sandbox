@@ -1,16 +1,7 @@
 ---
-- name: delete eclipse tar bundle
-  file: path=/home/vagrant/eclipse.tar.gz state=absent
-  listen: "eclipse tar bundle staged"
-
-- name: create an eclipse symbolic link
-  file:
-    src: /opt/eclipse/eclipse
-    dest: /usr/local/bin/eclipse
-    owner: root
-    group: root
-    state: link
-  listen: "eclipse tar bundle installed"
+- name: set graphical runlevel
+  command: systemctl set-default graphical.target
+  listen: server with gui installed
 
 - name: define eclipse desktop
   template:
@@ -19,8 +10,17 @@
     owner: root
     group: root
     mode: '0644'
-  listen: "eclipse tar bundle installed"
+  listen: eclipse tar bundle installed
 
-- name: set graphical runlevel
-  command: systemctl set-default graphical.target
-  listen: "server with gui installed"
+- name: delete eclipse bundle
+  file: path=/home/vagrant/eclipse.tar.gz state=absent
+  listen: eclipse bundle staged
+
+- name: create eclipse symbolic link
+  file:
+    src: /opt/eclipse/eclipse
+    dest: /usr/local/bin/eclipse
+    owner: root
+    group: root
+    state: link
+  listen: eclipse bundle installed

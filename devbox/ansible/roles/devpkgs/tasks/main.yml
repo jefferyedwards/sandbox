@@ -28,3 +28,27 @@
     - kubeadm
     - kubectl
   notify: kubernetes installed
+
+- debug:
+    msg: gradle_version is defined as {{ gradle_version }}
+
+- debug:
+    msg: gradle_download_url is defined as {{ gradle_download_url }}
+
+- name: stage gradle bundle
+  get_url:
+    url: "{{ gradle_download_url }}"
+    dest: /home/vagrant/gradle.zip
+    owner: vagrant
+    group: vagrant
+    mode: 0644
+  notify: gradle bundle staged
+
+- name: install gradle bundle
+  unarchive:
+    src: /home/vagrant/gradle.zip
+    remote_src: yes
+    dest: /opt
+    owner: root
+    group: root
+  notify: gradle bundle installed
