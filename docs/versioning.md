@@ -35,16 +35,17 @@ When changes are made to a microservice, it is important that one or more compon
 
  1. Each increment happens numerically with an increment of 1.
  2. When a bug fix is applied to a released version of the API and the API remains backwards compatible, increase the patch component:
-
+    ```
     v1.2.3 // before bug fix
     v1.2.4 // after bug fix
-
+    ```
 3. When additional functionality is added to a released version of the API and the API remains backwards compatible, increase the minor component and reset the patch component to 0:
-
+    ```
     v1.2.3 // before additional functionality added
     v1.3.0 // after additional functionality added
-
+    ```
 4. When additional functionality is added to a released version of the API and the API is not backwards compatible, increase the major component and reset the minor and patch components to 0:
-
+    ```
     v1.2.3 // before introduction of backwards incompatible changes
     v2.0.0 // after introduction of backwards incompatible change
+    ```
