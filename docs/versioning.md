@@ -27,6 +27,7 @@ Semantic versioning will be employed in the implementation of a versioning contr
 The use of schematic versioning is illustrated in Figure 1:
 
 ![versioning](./versioning.png)
+
 Figure 1: Version Number Changes
 
 ## Rules for increasing versions
