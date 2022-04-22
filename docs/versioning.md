@@ -18,7 +18,7 @@ One of the most important aspects of microservices-based applications is the abi
 Implementation of strongly versioned contracts can be one of the most challenging aspects to adopt in stable microservice-based application development. It is imperative that the development team internalize and understand the difference between breaking and non-breaking changes made to a given API. They must understand how and when an older API version can be retired from service. Development teams and management must employ appropriate communication techniques, including such things as depreciation and release notices in SDK documentation.
 
 ## The semantic version format
-Semantic versioning will be employed in the implementation of a versioning contract of microservice APIs. In essence semantic versioning introduce a hierarchical three-number versioning scheme <major>.<minor>.<patch>, which provides semantics to denote different levels of changes in a microservice API.
+Semantic versioning will be employed in the implementation of a versioning contract of microservice APIs. In essence semantic versioning introduce a hierarchical three-number versioning scheme ```<major>.<minor>.<patch>```, which provides semantics to denote different levels of changes in a microservice API.
 
  - **Major**: This number is incremented for incompatible breaking changes, such as removing an existing operation. For example, a breaking change to v1.2.3 will result in a new v2.0.0.
  - **Minor**: This number is incremented if new functionality is added in a compatible manner, such as adding a new operation to an API or adding a new feature to an existing API operation. For example, a compatible extension to v1.2.3 will result in a new v1.3.0.
