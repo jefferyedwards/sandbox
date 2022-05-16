@@ -1,0 +1,43 @@
+##
+## Create the final image.
+##
+FROM jedwards/base
+
+ARG \
+	BUNDLE_URL="https://github.com/AdoptOpenJDK/openjdk8-upstream-binaries/releases/download/jdk8u332-b09/OpenJDK8U-jdk_x64_linux_8u332b09.tar.gz" \
+	JAVA_HOME="/usr/java/openjdk-8"
+
+ENV \
+	JAVA_HOME="${JAVA_HOME}" \
+	JAVA_VERSION="8u332" \
+	LANG="C.UTF-8" \
+	PATH="${JAVA_HOME}/bin:${PATH}"
+
+RUN \
+	set -eux; \
+	\
+	# download and extract the OpenJDK bundle
+	curl -fL -o /tmp/openjdk.tgz ${BUNDLE_URL}; \
+ 	mkdir -p ${JAVA_HOME}; \
+ 	tar \
+		--extract \
+		--file /tmp/openjdk.tgz \
+		--directory ${JAVA_HOME} \
+		--strip-components 1 \
+		--no-same-owner; \
+	rm -f /tmp/openjdk.tgz; \
+	\
+	# housekeeping 
+	rm -rf ${JAVA_HOME}/jre/lib/security/cacerts; \
+	ln -sT /etc/pki/ca-trust/extracted/java/cacerts ${JAVA_HOME}/jre/lib/security/cacerts; \
+	ln -sfT ${JAVA_HOME} /usr/java/default; \
+	ln -sfT "$JAVA_HOME" /usr/java/latest; \
+	for bin in ${JAVA_HOME}/bin/*; do \
+		base=$(basename ${bin}); \
+		[ ! -e "/usr/bin/$base" ]; \
+		alternatives --install /usr/bin/${base} ${base} ${bin} 20000; \
+	done; \
+	\
+  # basic smoke test
+	javac -version; \
+	java -version

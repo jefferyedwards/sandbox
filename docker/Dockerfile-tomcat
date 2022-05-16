@@ -1,0 +1,59 @@
+##
+## Create the Tomcat image.
+##
+FROM jedwards/openjdk8
+
+ARG \
+  BUNDLE_URL="https://dlcdn.apache.org/tomcat/tomcat-9/v9.0.62/bin/apache-tomcat-9.0.62.tar.gz" \
+  CATALINA_HOME="/usr/local/tomcat" \
+  UNAME="tomcat" \
+  UID="5001" \
+  GNAME="tomcat" \
+  GID="5001"
+
+ENV \
+  CATALINA_HOME="${CATALINA_HOME}" \
+  PATH="${CATALINA_HOME}/bin:$PATH" \
+  TOMCAT_MAJOR="9" \
+  TOMCAT_VERSION="9.0.62"
+
+RUN \
+  set -eux; \
+  \
+  # download and extract the Tomcat bundle
+  curl -fL -o /tmp/tomcat.tgz "${BUNDLE_URL}"; \
+  mkdir -p "${CATALINA_HOME}"; \
+  tar \
+    --extract \
+    --file /tmp/tomcat.tgz \
+    --directory ${CATALINA_HOME} \
+    --strip-components 1 \
+    --no-same-owner; \
+  rm -f /tmp/tomcat.tgz; \
+  \
+  # create tomcat user
+  groupadd \
+    --gid ${GID} \
+    ${GNAME}; \
+  useradd \
+    --no-create-home \
+    --system \
+    --uid ${UID} \
+    --gid ${GID} \
+    ${UNAME}; \
+  \
+  # housekeeping 
+  chown --recursive ${UID}:${GID} ${CATALINA_HOME}; \
+  \
+  # basic smoke test
+  catalina.sh version
+
+COPY rootfs /
+
+EXPOSE 8080
+
+WORKDIR ${CATALINA_HOME}
+
+USER ${UID}
+ENTRYPOINT [ "/opt/scripts/tomcat/entrypoint.sh" ]
+CMD ["catalina.sh", "run"]

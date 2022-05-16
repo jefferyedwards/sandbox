@@ -1,0 +1,31 @@
+##
+## Create the base image.
+##
+FROM oraclelinux:8-slim
+LABEL maintainer "Jeff Edwards <jeff@edwardsonthe.net>"
+
+ENV \
+  HOME="/" \
+  OS_ARCH="amd64" \
+  OS_FLAVOUR="oraclelinux-8" \
+  OS_NAME="linux"
+
+RUN \
+  set -eux; \
+  \
+  # update and install packages
+  microdnf -y update; \
+  microdnf -y install \
+      binutils \
+      curl \
+      fontconfig \
+      freetype \
+      gzip \
+      tar \
+      unzip \
+      util-linux \
+      vim-minimal \
+      wget; \
+  \
+  # housekeeping
+  microdnf clean all

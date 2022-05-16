@@ -1,0 +1,25 @@
+##
+## Create the Tomcat image.
+##
+FROM jedwards/tomcat9
+
+ARG \
+  GEOSERVER_VERSION="2.20.4" \
+  GEOWEBCACHE_VERSION="1.20.2"
+
+
+ENV \
+  GEOSERVER_VERSION="${GEOSERVER_VERSION}" \
+  GEOWEBCACHE_VERSION="${GEOWEBCACHE_VERSION}" \
+  \
+  GEOSERVER_DATA_DIR="/geoserver" \
+  GEOWEBCACHE_DATA_DIR="/geoserver/gwc"
+
+RUN \
+  set -eux; \
+  \
+  # download and extract the GeoServer bundle
+  curl -fL -o /tmp/geoserver-war.zip "https://sourceforge.net/projects/geoserver/files/GeoServer/${GEOSERVER_VERSION}/geoserver-${GEOSERVER_VERSION}-war.zip"; \
+  \
+  # download and extract the GeoWebCache bundle
+  curl -fL -o /tmp/geowebcache-war.zip "https://sourceforge.net/projects/geowebcache/files/geowebcache/${GEOWEBCACHE_VERSION}/geowebcache-${GEOWEBCACHE_VERSION}-war.zip"; \
