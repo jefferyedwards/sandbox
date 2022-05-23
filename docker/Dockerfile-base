@@ -1,31 +1,38 @@
 ##
 ## Create the base image.
 ##
-FROM oraclelinux:8-slim
+FROM oraclelinux:8
+
 LABEL maintainer "Jeff Edwards <jeff@edwardsonthe.net>"
 
 ENV \
   HOME="/" \
-  OS_ARCH="amd64" \
-  OS_FLAVOUR="oraclelinux-8" \
-  OS_NAME="linux"
+  OS_ARCH="x86_64" \
+  OS_FLAVOUR="GNU/Linux" \
+  OS_NAME="Oracle Linux 8"
 
 RUN \
   set -eux; \
   \
   # update and install packages
-  microdnf -y update; \
-  microdnf -y install \
-      binutils \
-      curl \
-      fontconfig \
-      freetype \
-      gzip \
-      tar \
-      unzip \
-      util-linux \
-      vim-minimal \
-      wget; \
+  dnf config-manager \
+    --enable ol8_addons \
+    --enable ol8_codeready_builder; \
+  dnf -y update; \
+  dnf -y install \
+    binutils \
+    curl \
+    fontconfig \
+    freetype \
+    gzip \
+    oracle-epel-release-el8 \
+    tar \
+    unzip \
+    util-linux \
+    vim-minimal \
+    wget; \
   \
   # housekeeping
-  microdnf clean all
+  dnf -y autoremove; \
+  dnf clean all
+

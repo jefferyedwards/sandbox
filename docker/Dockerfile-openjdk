@@ -17,7 +17,11 @@ RUN \
 	set -eux; \
 	\
 	# download and extract the OpenJDK bundle
-	curl -fL -o /tmp/openjdk.tgz ${BUNDLE_URL}; \
+	curl \
+    --fail \
+    --location \
+    --output /tmp/openjdk.tgz \
+    ${BUNDLE_URL}; \
  	mkdir -p ${JAVA_HOME}; \
  	tar \
 		--extract \

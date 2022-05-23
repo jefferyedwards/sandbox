@@ -14,15 +14,18 @@ ARG \
 ENV \
   CATALINA_HOME="${CATALINA_HOME}" \
   PATH="${CATALINA_HOME}/bin:$PATH" \
-  TOMCAT_MAJOR="9" \
   TOMCAT_VERSION="9.0.62"
 
 RUN \
   set -eux; \
   \
   # download and extract the Tomcat bundle
-  curl -fL -o /tmp/tomcat.tgz "${BUNDLE_URL}"; \
-  mkdir -p "${CATALINA_HOME}"; \
+  curl \
+    --fail \
+    --location \
+    --output /tmp/tomcat.tgz \
+    ${BUNDLE_URL}; \
+  mkdir -p ${CATALINA_HOME}; \
   tar \
     --extract \
     --file /tmp/tomcat.tgz \
@@ -48,12 +51,8 @@ RUN \
   # basic smoke test
   catalina.sh version
 
-COPY rootfs /
-
 EXPOSE 8080
-
+USER ${UID}
 WORKDIR ${CATALINA_HOME}
 
-USER ${UID}
-ENTRYPOINT [ "/opt/scripts/tomcat/entrypoint.sh" ]
 CMD ["catalina.sh", "run"]

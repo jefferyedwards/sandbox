@@ -1,25 +1,46 @@
 ##
-## Create the Tomcat image.
+## Create the Geo Server image.
 ##
 FROM jedwards/tomcat9
 
 ARG \
+  GEOSERVER_HOME="/var/geoserver" \
   GEOSERVER_VERSION="2.20.4" \
-  GEOWEBCACHE_VERSION="1.20.2"
-
+  LIBJPEG_TURBO_VERSION="2.1.3"
 
 ENV \
   GEOSERVER_VERSION="${GEOSERVER_VERSION}" \
-  GEOWEBCACHE_VERSION="${GEOWEBCACHE_VERSION}" \
+  LIBJPEG_TURBO_VERSION="${LIBJPEG_TURBO_VERSION}" \
   \
-  GEOSERVER_DATA_DIR="/geoserver" \
-  GEOWEBCACHE_DATA_DIR="/geoserver/gwc"
+  GEOSERVER_HOME="${GEOSERVER_HOME}" \
+  GEOSERVER_DATA_DIR="${GEOSERVER_HOME}/data" \
+  GEOSERVER_LOG_DIR="${GEOSERVER_HOME}/logs" \
+  GEOSERVER_LOG_LOCATION="${GEOSERVER_LOG_DIR}/geoserver.log" \
+  GEOWEBCACHE_CONFIG_DIR="${GEOSERVER_DATA_DIR}/gwc/config" \
+  GEOWEBCACHE_CACHE_DIR="${GEOSERVER_HOME}/gwc/cache" \
+  NETCDF_DATA_DIR="${GEOSERVER_HOME}/netcdf/data"
+
+USER root
+
+COPY scripts /scripts
+RUN \
+  /scripts/setup.sh; \
+  rm -rf /scripts
 
 RUN \
   set -eux; \
   \
-  # download and extract the GeoServer bundle
-  curl -fL -o /tmp/geoserver-war.zip "https://sourceforge.net/projects/geoserver/files/GeoServer/${GEOSERVER_VERSION}/geoserver-${GEOSERVER_VERSION}-war.zip"; \
+  dnf -y install \
+    gdal \
+    gdal-devel \
+    gdal-java; \
   \
-  # download and extract the GeoWebCache bundle
-  curl -fL -o /tmp/geowebcache-war.zip "https://sourceforge.net/projects/geowebcache/files/geowebcache/${GEOWEBCACHE_VERSION}/geowebcache-${GEOWEBCACHE_VERSION}-war.zip"; \
+  # housekeeping
+  chown -R tomcat. \
+    ${CATALINA_HOME} \
+    ${GEOSERVER_HOME}; \
+  dnf -y autoremove; \
+  dnf clean all
+
+USER tomcat
+VOLUME [ "${GEOSERVER_HOME}" ]
